@@ -1,15 +1,26 @@
-// src/app.js
-const express = require('express');
-const cors = require('cors');
-// const auth = require('./src/routes/auth');
+const express = require("express");
+const sequelize = require("./src/config/sequelize");
+const User = require("./src/models/User");
+const authRoutes = require("./src/routes/auth");
 
 const app = express();
+app.use(express.json()); // Parse JSON requests
+
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
-// app.use('/api/auth', auth);
+// Sync database and create the table
+sequelize.sync({ force: false }) // Set force: true to drop & recreate table
+  .then(() => console.log("✅ Database synced"))
+  .catch(err => console.error("❌ Error syncing database:", err));
 
+app.use('/api/auth', authRoutes);
+
+// Test Route
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
