@@ -2,6 +2,7 @@ const express = require("express");
 const sequelize = require("./src/config/sequelize");
 const User = require("./src/models/User");
 const authRoutes = require("./src/routes/auth");
+const builderRoutes = require("./src/routes/builder");
 
 const app = express();
 app.use(express.json()); // Parse JSON requests
@@ -14,6 +15,7 @@ sequelize.sync({ force: false }) // Set force: true to drop & recreate table
   .catch(err => console.error("❌ Error syncing database:", err));
 
 app.use('/api/auth', authRoutes);
+app.use("/api/builder", builderRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
