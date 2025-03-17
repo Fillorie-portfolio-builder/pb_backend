@@ -1,65 +1,117 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const Owner = require("../models/Owner");
+const Builder = require("../models/Builder");
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
 // Project Owner Registration
 exports.registerOwner = async (req, res) => {
   try {
-    const { email, password, businessUrl, bio, profileImage, linkedin } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      businessUrl,
+      bio,
+      profilePicture,
+      linkedin,
+      mobile,
+      offers,
+      profession
+    } = req.body;
+
+    console.log("Req body", req.body);
+
+    console.log("Registering owner with email:", email);
 
     // Check if user already exists
-    let user = await User.findOne({ where: { email } });
+    let user = await Owner.findOne({ where: { email } });
     if (user) return res.status(400).json({ message: "User already exists" });
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create Project Owner
-    user = await User.create({
+    user = await Owner.create({
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
+      mobile,
       accountType: "owner",
       businessUrl,
       bio,
-      profileImage,
-      linkedin
+      profileImage: profilePicture,
+      linkedin,
+      offers: offers || [],
+      profession,
     });
 
-    res.status(201).json({ message: "Project Owner registered successfully", user });
+    console.log("Project Owner created:", user);
+
+    res
+      .status(201)
+      .json({ message: "Project Owner registered successfully", user });
   } catch (err) {
+    console.error("Error registering project owner:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
 // Portfolio Builder Registration
 exports.registerBuilder = async (req, res) => {
   try {
-    const { email, password, skillSets, educationalBackground, preferredJobTypes, availability, profileImage, bio } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      mobile,
+      skillSets,
+      educationalBackground,
+      preferredJobTypes,
+      availability,
+      profileImage,
+      bio,
+      profession,
+    } = req.body;
 
-    // Check if user already exists
-    let user = await User.findOne({ where: { email } });
+    console.log("Registering builder with email:", email);
+
+    // Check if builder already exists
+    let user = await Builder.findOne({ where: { email } });
     if (user) return res.status(400).json({ message: "User already exists" });
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create Portfolio Builder
-    user = await User.create({
+    user = await Builder.create({
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
+      phone: mobile,
       accountType: "builder",
-      skillSets,
+      skillSets: skillSets || [],
       educationalBackground,
-      preferredJobTypes,
+      preferredJobTypes: preferredJobTypes || [],
       availability,
       profileImage,
-      bio
+      bio,
+      profession,
+      projectsCompleted: 0,
+      ratings: 0.0,
     });
 
-    res.status(201).json({ message: "Portfolio Builder registered successfully", user });
+    console.log("Portfolio Builder created:", user);
+
+    res
+      .status(201)
+      .json({ message: "Portfolio Builder registered successfully", user });
   } catch (err) {
+    console.error("Error registering portfolio builder:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
@@ -69,21 +121,45 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    // ✅ Check if email exists in Builder or Owner model
+    let user = await Owner.findOne({ where: { email } });
 
-    // Compare password
+    if (!user) {
+      user = await Builder.findOne({ where: { email } });
+    }
+
+    // ✅ If no user found, return invalid credentials error
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // ✅ Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, email: user.email, accountType: user.accountType }, SECRET_KEY, {
-      expiresIn: "7d",
+    // ✅ Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, accountType: user.accountType },
+      SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+
+    // ✅ Return user details and token
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        accountType: user.accountType,
+        firstName: user.firstName || null, // Some fields may not exist for Owners
+        lastName: user.lastName || null,
+      },
     });
-
-    res.json({ message: "Login successful", token});
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
