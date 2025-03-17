@@ -3,9 +3,11 @@ const sequelize = require("./src/config/sequelize");
 const User = require("./src/models/User");
 const authRoutes = require("./src/routes/auth");
 const builderRoutes = require("./src/routes/builder");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json()); // Parse JSON requests
+app.use(cors());
 
 const PORT = process.env.PORT || 5000;
 
