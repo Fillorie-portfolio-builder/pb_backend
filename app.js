@@ -3,6 +3,8 @@ const sequelize = require("./src/config/sequelize");
 const User = require("./src/models/User");
 const authRoutes = require("./src/routes/auth");
 const builderRoutes = require("./src/routes/builder");
+const portfolioRoutes = require("./src/routes/portfolio");
+const projectRoutes = require("./src/routes/project");
 const cors = require("cors");
 
 const app = express();
@@ -18,6 +20,8 @@ sequelize.sync({ force: false }) // Set force: true to drop & recreate table
 
 app.use('/api/auth', authRoutes);
 app.use("/api/builder", builderRoutes);
+app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/project", projectRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

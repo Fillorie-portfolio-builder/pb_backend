@@ -1,4 +1,4 @@
-const { User } = require("../models/User");
+const Builder = require("../models/Builder");
 
 // Retrieve all Portfolio Builders
 exports.getAllPortfolioBuilders = async (req, res) => {
@@ -14,9 +14,12 @@ exports.getAllPortfolioBuilders = async (req, res) => {
 exports.getPortfolioBuilderById = async (req, res) => {
   try {
     const { id } = req.params;
-    const builder = await User.findOne({
-      where: { id, accountType: "builder" },
+    console.log("id", id);
+    const builder = await Builder.findOne({
+      where: { id },
     });
+
+    console.log("build", builder);
 
     if (!builder)
       return res.status(404).json({ message: "Portfolio Builder not found" });

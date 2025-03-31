@@ -17,6 +17,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
 async function testDBConnection() {
   try {
     await sequelize.authenticate();
+    sequelize.sync({ alter: true })
     console.log("✅ Database connected successfully!");
   } catch (error) {
     console.error("❌ Unable to connect to the database:", error);
