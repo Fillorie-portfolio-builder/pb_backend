@@ -61,6 +61,9 @@ const User = sequelize.define("User", {
       isIn: [["owner", "builder"]],
     },
   },
+  jobType: {
+    type: DataTypes.STRING,
+  },
 });
 
 module.exports = User;

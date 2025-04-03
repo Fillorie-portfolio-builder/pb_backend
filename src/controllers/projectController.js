@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+
 const { v4: uuidv4 } = require("uuid");
 
 exports.postProject = async (req, res) => {
@@ -55,6 +56,7 @@ exports.getProjectsByOwner = async (req, res) => {
   }
 };
 
+
 // (Optional) Get single project by ID
 exports.getProjectById = async (req, res) => {
   try {
@@ -62,6 +64,24 @@ exports.getProjectById = async (req, res) => {
     const project = await Project.findByPk(id);
     if (!project) return res.status(404).json({ message: "Project not found" });
     res.status(200).json(project);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.getAllProjects = async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    const whereClause = {};
+    if (category) whereClause.category = category;
+
+    const projects = await Project.findAll({
+      where: whereClause,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(projects);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

@@ -5,6 +5,7 @@ const authRoutes = require("./src/routes/auth");
 const builderRoutes = require("./src/routes/builder");
 const portfolioRoutes = require("./src/routes/portfolio");
 const projectRoutes = require("./src/routes/project");
+const ownerRoutes = require("./src/routes/owner");
 const cors = require("cors");
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use("/api/builder", builderRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/project", projectRoutes);
+app.use("/api/owner", ownerRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

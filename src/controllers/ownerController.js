@@ -1,4 +1,4 @@
-const { User } = require("../models/User");
+const Owner = require("../models/Owner");
 
 // Retrieve all Project Owners
 exports.getAllProjectOwners = async (req, res) => {
@@ -14,7 +14,7 @@ exports.getAllProjectOwners = async (req, res) => {
 exports.getProjectOwnerById = async (req, res) => {
   try {
     const { id } = req.params;
-    const owner = await User.findOne({ where: { id, accountType: "owner" } });
+    const owner = await Owner.findOne({ where: { id, accountType: "owner" } });
 
     if (!owner) return res.status(404).json({ message: "Project Owner not found" });
 

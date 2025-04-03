@@ -68,13 +68,16 @@ exports.registerBuilder = async (req, res) => {
       email,
       password,
       mobile,
-      skillSets,
+      skills,
       educationalBackground,
       preferredJobTypes,
       availability,
       profileImage,
       bio,
+      category,
+      subcategories,
       profession,
+      location
     } = req.body;
 
     console.log("Registering builder with email:", email);
@@ -94,15 +97,19 @@ exports.registerBuilder = async (req, res) => {
       password: hashedPassword,
       phone: mobile,
       accountType: "builder",
-      skillSets: skillSets || [],
+      skillSets: skills|| [],
       educationalBackground,
       preferredJobTypes: preferredJobTypes || [],
       availability,
       profileImage,
       bio,
+      location,
       profession,
       projectsCompleted: 0,
       ratings: 0.0,
+      category,
+      subcategories,
+      location
     });
 
     console.log("Portfolio Builder created:", user);
