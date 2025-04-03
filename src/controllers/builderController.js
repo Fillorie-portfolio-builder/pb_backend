@@ -3,14 +3,27 @@ const Builder = require("../models/Builder");
 // Retrieve all Portfolio Builders
 exports.getAllPortfolioBuilders = async (req, res) => {
   try {
-    const builders = await User.findAll({ where: { accountType: "builder" } });
+    const { category, subcategory } = req.query;
+
+    // Build dynamic query filter
+    const whereClause = { accountType: "builder" };
+
+    if (category) {
+      whereClause.category = category;
+    }
+
+    if (subcategory) {
+      whereClause.subcategory = subcategory;
+    }
+
+    const builders = await Builder.findAll({ where: whereClause });
     res.status(200).json(builders);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-// Retrieve a Portfolio Builder by ID
+// Retrieve a Portfolio Builder by ID 
 exports.getPortfolioBuilderById = async (req, res) => {
   try {
     const { id } = req.params;

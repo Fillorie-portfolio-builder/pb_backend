@@ -48,6 +48,18 @@ const Builder = sequelize.define("Builder", {
       isUrl: true,
     },
   },
+  location: {
+    type: DataTypes.STRING,
+  },
+
+  category: {
+    type: DataTypes.STRING,
+  },
+
+  subcategories: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+  },
+
   educationalBackground: {
     type: DataTypes.TEXT,
   },
@@ -60,30 +72,38 @@ const Builder = sequelize.define("Builder", {
     defaultValue: [],
   },
   availability: {
-    type: DataTypes.STRING,
+    type: DataTypes.BOOLEAN,
   },
   profession: {
     type: DataTypes.STRING,
   },
+
+  location: {
+    type: DataTypes.STRING,
+  },
+
   projectsCompleted: {
     type: DataTypes.INTEGER,
-    defaultValue: 0, // ✅ Default to 0 when a builder is created
+    defaultValue: 0,
   },
   ratings: {
     type: DataTypes.FLOAT,
-    defaultValue: 0.0, // ✅ Default rating is 0
+    defaultValue: 0.0,
     validate: {
       min: 0,
-      max: 5, // Ratings should be between 0 to 5
+      max: 5,
     },
   },
   accountType: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: "builder", // ✅ Default to "builder"
+    defaultValue: "builder",
     validate: {
       isIn: [["builder"]],
     },
+  },
+  jobType: {
+    type: DataTypes.STRING,
   },
 });
 

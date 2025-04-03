@@ -9,5 +9,6 @@ router.post("/", authenticateUser, projectController.postProject);
 // Optional routes for getting projects:
 router.get("/owner/:ownerId", projectController.getProjectsByOwner);
 router.get("/:id", projectController.getProjectById);
+router.get("/", projectController.getAllProjects);
 
 module.exports = router;
