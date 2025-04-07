@@ -57,7 +57,10 @@ const Project = sequelize.define("Project", {
     defaultValue: [],
   },
 
-
+  interestedBuilders: {
+    type: DataTypes.ARRAY(DataTypes.UUID),
+    defaultValue: [],
+  },
 });
 
 module.exports = Project;

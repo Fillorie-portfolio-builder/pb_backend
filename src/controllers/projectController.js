@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const Builder = require("../models/Builder");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -61,8 +62,24 @@ exports.getProjectsByOwner = async (req, res) => {
 exports.getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
+
     const project = await Project.findByPk(id);
     if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // 👇 Fetch builder details if interestedBuilders exist
+    if (
+      Array.isArray(project.interestedBuilders) &&
+      project.interestedBuilders.length > 0
+    ) {
+      const builders = await Builder.findAll({
+        where: {
+          id: project.interestedBuilders,
+        },
+        attributes: ["id", "firstName", "lastName", "profileImage"], // customize fields
+      });
+      project.dataValues.interestedBuilderDetails = builders; // attach for frontend
+    }
+
     res.status(200).json(project);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -83,6 +100,64 @@ exports.getAllProjects = async (req, res) => {
 
     res.status(200).json(projects);
   } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.markAsInterested = async (req, res) => {
+  const { projectId } = req.params;
+  const builderId = req.user.id; // assumes auth middleware sets req.user
+
+  try {
+    const project = await Project.findByPk(projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // Ensure 'interestedBuilders' is initialized
+    if (!Array.isArray(project.interestedBuilders)) {
+      console.log("hukauka");
+      project.interestedBuilders = [];
+    }
+
+    // Avoid duplicate entries
+    if (!project.interestedBuilders.includes(builderId)) {
+      console.log("ehewhe");
+      await project.update({
+        interestedBuilders: [...project.interestedBuilders, builderId],
+      });
+      await project.save();
+    }
+
+    res.status(200).json({ message: "Marked as interested", project });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.assignBuilderToProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { builderId } = req.body;
+
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    
+    const builder = await Builder.findByPk(builderId);
+    if (!builder.projects.includes(projectId)) {
+      await builder.update({
+        projects: [...builder.projects, projectId],
+      });
+      await builder.save();
+    }
+
+
+    project.builderId = builderId;
+    await project.save();
+
+    res.status(200).json({ message: "Builder assigned successfully", project });
+  } catch (err) {
+    console.error("Error assigning builder:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
