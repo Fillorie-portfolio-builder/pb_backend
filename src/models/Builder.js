@@ -105,6 +105,11 @@ const Builder = sequelize.define("Builder", {
   jobType: {
     type: DataTypes.STRING,
   },
+
+  projects: {
+    type: DataTypes.ARRAY(DataTypes.UUID),
+    defaultValue: [],
+  },
 });
 
 module.exports = Builder;
