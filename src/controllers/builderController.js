@@ -1,4 +1,6 @@
+const { Op } = require("sequelize");
 const Builder = require("../models/Builder");
+const Project = require("../models/Project");
 
 // Retrieve all Portfolio Builders
 exports.getAllPortfolioBuilders = async (req, res) => {
@@ -27,17 +29,25 @@ exports.getAllPortfolioBuilders = async (req, res) => {
 exports.getPortfolioBuilderById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("id", id);
-    const builder = await Builder.findOne({
-      where: { id },
-    });
 
-    console.log("build", builder);
+    const builder = await Builder.findOne({ where: { id } });
 
-    if (!builder)
+    if (!builder) {
       return res.status(404).json({ message: "Portfolio Builder not found" });
+    }
 
-    res.status(200).json(builder);
+    let projectDetails = [];
+    if (Array.isArray(builder.projects) && builder.projects.length > 0) {
+      projectDetails = await Project.findAll({
+        where: {
+          id: {
+            [Op.in]: builder.projects,
+          },
+        },
+      });
+    }
+
+    res.status(200).json({ ...builder.toJSON(), projects: projectDetails });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
