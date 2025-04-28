@@ -19,6 +19,7 @@
     "nodemon": "^3.1.9",
     "pg": "^8.13.3",
     "pg-hstore": "^2.3.4",
+    "portfolio-project-backend": "file:",
     "sequelize": "^6.37.5"
   }
 }
