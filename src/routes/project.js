@@ -10,6 +10,7 @@ router.post("/", authenticateUser, projectController.postProject);
 router.get("/owner/:ownerId", projectController.getProjectsByOwner);
 router.get("/:id", projectController.getProjectById);
 router.get("/", projectController.getAllProjects);
+router.put("/:id", projectController.updateProject);
 router.post("/:projectId/interested", authenticateUser, projectController.markAsInterested);
 router.post("/:projectId/assign-builder", authenticateUser, projectController.assignBuilderToProject);
 
