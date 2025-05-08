@@ -162,6 +162,7 @@ exports.assignBuilderToProject = async (req, res) => {
   }
 };
 
+
 exports.markProjectCompletedByBuilder = async (req, res) => {
   const { projectId } = req.params;
   const { builderId } = req.body;
@@ -217,6 +218,26 @@ exports.confirmProjectCompletionByOwner = async (req, res) => {
 
     res.status(200).json({ message: "Project completion confirmed by owner", project });
   } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.updateProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    const project = await Project.findByPk(id);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    await project.update(updatedData);
+
+    res.status(200).json({ message: "Project updated successfully", project });
+  } catch (err) {
+    console.error("Update error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
