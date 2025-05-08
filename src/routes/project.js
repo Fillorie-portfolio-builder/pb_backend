@@ -14,6 +14,8 @@ router.put("/:id", projectController.updateProject);
 router.post("/:projectId/interested", authenticateUser, projectController.markAsInterested);
 router.post("/:projectId/assign-builder", authenticateUser, projectController.assignBuilderToProject);
 
+router.put("/:projectId/mark-completed", projectController.markProjectCompletedByBuilder);
+router.put("/:projectId/confirm-completion", projectController.confirmProjectCompletionByOwner);
+
 module.exports = router;
-  
-  
+

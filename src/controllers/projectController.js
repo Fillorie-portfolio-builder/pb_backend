@@ -142,7 +142,7 @@ exports.assignBuilderToProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-    
+
     const builder = await Builder.findByPk(builderId);
     if (!builder.projects.includes(projectId)) {
       await builder.update({
@@ -158,6 +158,66 @@ exports.assignBuilderToProject = async (req, res) => {
     res.status(200).json({ message: "Builder assigned successfully", project });
   } catch (err) {
     console.error("Error assigning builder:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
+exports.markProjectCompletedByBuilder = async (req, res) => {
+  const { projectId } = req.params;
+  const { builderId } = req.body;
+
+  if (!builderId) {
+    return res.status(400).json({ message: "Builder ID is required" });
+  }
+
+  try {
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    if (project.builderId !== builderId) {
+      return res.status(403).json({ message: "Not authorized to mark this project" });
+    }
+
+    if (project.completionStatus === "confirmed_by_owner") {
+      return res.status(400).json({ message: "Project already confirmed by owner" });
+    }
+
+    await project.update({ completionStatus: "completed_by_builder" });
+
+    return res.status(200).json({ message: "Project marked as completed by builder", project });
+  } catch (err) {
+    console.error("Error updating project completion:", err);
+    return res.status(500).json({ message: "Internal server error", error: err.message });
+  }
+};
+
+exports.confirmProjectCompletionByOwner = async (req, res) => {
+  const { projectId } = req.params;
+  const { ownerId } = req.body;
+
+  try {
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    if (project.ownerId !== ownerId) {
+      return res.status(403).json({ message: "Only the owner can confirm completion" });
+    }
+
+    if (project.completionStatus !== "completed_by_builder") {
+      return res.status(400).json({ message: "Builder has not marked the project as completed" });
+    }
+
+    await project.update({ completionStatus: "confirmed_by_owner" });
+
+    res.status(200).json({ message: "Project completion confirmed by owner", project });
+  } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };

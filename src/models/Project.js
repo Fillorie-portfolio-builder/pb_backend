@@ -61,6 +61,14 @@ const Project = sequelize.define("Project", {
     type: DataTypes.ARRAY(DataTypes.UUID),
     defaultValue: [],
   },
+
+  completionStatus: {
+    type: DataTypes.STRING,
+    defaultValue: "in_progress",
+    validate: {
+      isIn: [["in_progress", "completed_by_builder", "confirmed_by_owner"]]
+    },
+  },
 });
 
 module.exports = Project;
