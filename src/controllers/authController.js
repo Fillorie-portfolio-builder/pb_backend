@@ -97,7 +97,7 @@ exports.registerBuilder = async (req, res) => {
       password: hashedPassword,
       phone: mobile,
       accountType: "builder",
-      skillSets: skills|| [],
+      skillSets: skills || [],
       educationalBackground,
       preferredJobTypes: preferredJobTypes || [],
       availability,
@@ -216,8 +216,8 @@ exports.updateEmail = async (req, res) => {
     const emailExistsInOwner = await Owner.findOne({ where: { email: newEmail } });
     const emailExistsInBuilder = await Builder.findOne({ where: { email: newEmail } });
 
-    if ((emailExistsInOwner && emailExistsInOwner.id !== id) || 
-        (emailExistsInBuilder && emailExistsInBuilder.id !== id)) {
+    if ((emailExistsInOwner && emailExistsInOwner.id !== id) ||
+      (emailExistsInBuilder && emailExistsInBuilder.id !== id)) {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
@@ -272,5 +272,59 @@ exports.updatePassword = async (req, res) => {
   } catch (err) {
     console.error('Error updating password:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+exports.updateBuilder = async (req, res) => {
+  try {
+    const builderId = req.params.id;
+    const {
+      firstName,
+      lastName,
+      email,
+      mobile,
+      skills,
+      educationalBackground,
+      preferredJobTypes,
+      availability,
+      profileImage,
+      bio,
+      category,
+      subcategories,
+      profession,
+      location
+    } = req.body;
+
+    console.log("Updating builder with ID:", builderId);
+
+    let builder = await Builder.findByPk(builderId);
+    if (!builder) {
+      return res.status(404).json({ message: "Builder not found" });
+    }
+    const updatedData = {
+      firstName,
+      lastName,
+      email,
+      phone: mobile,
+      skillSets: skills || [],
+      educationalBackground,
+      preferredJobTypes: preferredJobTypes || [],
+      availability,
+      profileImage,
+      bio,
+      category,
+      subcategories,
+      profession,
+      location
+    };
+
+    await builder.update(updatedData);
+
+    console.log("Builder updated:", builder);
+
+    res.status(200).json({ message: "Builder updated successfully", builder });
+  } catch (err) {
+    console.error("Error updating builder:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
