@@ -1,5 +1,5 @@
 const express = require('express');
-const { updateProfile, updateEmail, updatePassword } = require('../controllers/authController');
+const { updateProfile, updateEmail, updatePassword ,updateBuilder} = require('../controllers/authController');
 const router = express.Router();
 
 router.put('/updateprofile/:id', updateProfile);
