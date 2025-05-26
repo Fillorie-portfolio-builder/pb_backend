@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Owner = require("../models/Owner");
 const Builder = require("../models/Builder");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
@@ -326,5 +328,132 @@ exports.updateBuilder = async (req, res) => {
   } catch (err) {
     console.error("Error updating builder:", err);
     res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.sendForgotPasswordEmail = async (email, name, resetUrl) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com", // ✅ Hostinger SMTP server
+    port: 465, // ✅ Use 465 for SSL, or 587 for TLS
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'PORTFOILO BUILDER - Reset Password',
+    html: `
+     <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333333; line-height: 1.6;">
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h1 style="color: #4a4a4a; margin: 0; font-size: 24px;">Portfolio Builder</h1>
+        </div>
+        
+        <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 8px 8px; border: 1px solid #e9ecef;">
+          <h2 style="color: #2c3e50; margin-top: 0; font-size: 20px;">Reset Your Password</h2>
+          
+          <p style="margin-bottom: 20px;">Hey ${name},</p>
+          
+          <p style="margin-bottom: 20px;">You requested to reset your password. Click the button below to set a new password:</p>
+          
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${resetUrl}" style="background-color: #6c5ce7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 500; display: inline-block; box-shadow: 0 2px 4px rgba(108, 92, 231, 0.2);">
+              Reset Password
+            </a>
+          </div>
+          
+          <p style="margin-bottom: 20px; font-size: 14px; color: #7f8c8d;">
+            This link will expire in 10 mintus. If you didn't request this, please ignore this email.
+          </p>
+          
+          <div style="border-top: 1px solid #e9ecef; margin-top: 30px; padding-top: 20px;">
+            <p style="margin: 0; font-size: 14px; color: #7f8c8d;">
+              Best regards,<br>
+              <strong style="color: #2c3e50;">Team Portfolio Builder</strong>
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6;">
+          <p style="margin: 0;">© 2025 Portfolio Builder Team. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  console.log("emai", email);
+  try {
+    // Check if user exists
+    let user = await Owner.findOne({ where: { email } });
+    console.log(user);
+    if (!user) {
+      user = await Builder.findOne({ where: { email } });
+      console.log(user);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = Date.now() + 600000; // 10 minutes expiration
+
+    console.log("resetToken", resetToken);
+    console.log("resetTokenExpires", resetTokenExpires);
+    user.verificationToken = resetToken;
+    user.verificationTokenExpires = resetTokenExpires;
+
+
+    await user.save();
+
+    const resetUrl = `http://${process.env.API_BASE}/reset-password/token=${resetToken}`;
+    await exports.sendForgotPasswordEmail(email, user.firstName, resetUrl);
+
+    res.status(200).json({
+      message: "Password reset link sent",
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+}
+
+exports.confirmPassword = async (req, res) => {
+  try {
+    const { token } = req.query;
+    const { password } = req.body;
+
+    // Find the user by the token
+    let user = await Owner.findOne({ verificationToken: token });
+    // console.log("user1", user);
+    if (!user) {
+      user = await Builder.findOne({ verificationToken: token });
+      // console.log("user2", user);
+
+      if (!user) return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashedPassword;
+    user.verificationToken = null;
+    user.verificationTokenExpires = null;
+
+    await user.save();
+
+    res.status(200).json({ message: "Password Updated Successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 };
