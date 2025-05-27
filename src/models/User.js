@@ -64,6 +64,12 @@ const User = sequelize.define("User", {
   jobType: {
     type: DataTypes.STRING,
   },
+    verificationToken: {
+    type: DataTypes.STRING,
+  },
+  verificationTokenExpires: {
+    type: DataTypes.DATE,
+  },
 });
 
 module.exports = User;

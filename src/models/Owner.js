@@ -69,6 +69,12 @@ const Owner = sequelize.define("Owner", {
   profession: {
     type: DataTypes.STRING,
   },
+  verificationToken: {
+    type: DataTypes.STRING,
+  },
+  verificationTokenExpires: {
+    type: DataTypes.DATE,
+  },
 });
 
 module.exports = Owner;

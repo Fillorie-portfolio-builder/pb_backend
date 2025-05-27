@@ -110,6 +110,12 @@ const Builder = sequelize.define("Builder", {
     type: DataTypes.ARRAY(DataTypes.UUID),
     defaultValue: [],
   },
+  verificationToken: {
+    type: DataTypes.STRING,
+  },
+  verificationTokenExpires: {
+    type: DataTypes.DATE,
+  },
 });
 
 module.exports = Builder;
