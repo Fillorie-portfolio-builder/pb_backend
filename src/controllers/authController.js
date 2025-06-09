@@ -35,7 +35,7 @@ exports.registerOwner = async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const sanitizedBusinessUrl = businessUrl?.trim() || null;
 
     // Create Project Owner
@@ -396,10 +396,13 @@ exports.forgotPassword = async (req, res) => {
   try {
     // Check if user exists
     let user = await Owner.findOne({ where: { email } });
-    console.log(user);
+    // console.log(user);
+    // console.log("Owner Email :", user.email, "Owner PW  :", user.password);
     if (!user) {
       user = await Builder.findOne({ where: { email } });
-      console.log(user);
+      // console.log(user);
+      // console.log("Builder Email :", user.email, "Builder PW  :", user.password);
+
       if (!user) return res.status(404).json({ message: 'User not found' });
     }
 
@@ -414,8 +417,13 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetUrl = `http://${process.env.API_BASE}/reset-password/token=${resetToken}`;
+    const resetUrl = `http://${process.env.API_BASE}/reset-password/${resetToken}`;
     await exports.sendForgotPasswordEmail(email, user.firstName, resetUrl);
+    // console.log("Reset Password stage ----- ");
+    // console.log("User email : ", user.email);
+    // console.log("User password : ", user.password);
+    // console.log("Token ", user.verificationToken);
+    // console.log("   ");
 
     res.status(200).json({
       message: "Password reset link sent",
@@ -433,10 +441,21 @@ exports.confirmPassword = async (req, res) => {
     const { password } = req.body;
 
     // Find the user by the token
-    let user = await Owner.findOne({ verificationToken: token });
+    let user = await Owner.findOne({ where: { verificationToken: token } });
+    //  console.log("confirmPassword Owner");
+    // console.log("User email : ", user.email);
+    // console.log("User password : ", user.password);
+    // console.log("Token ", token);
+    // console.log("   ");
     // console.log("user1", user);
+
     if (!user) {
-      user = await Builder.findOne({ verificationToken: token });
+      user = await Builder.findOne({ where: { verificationToken: token } });
+      // console.log("confirmPassword Builder");
+      // console.log("User email : ", user.email);
+      // console.log("User password : ", user.password);
+      // console.log("Token ", token);
+      // console.log("   ");
       // console.log("user2", user);
 
       if (!user) return res.status(404).json({ message: 'User not found' });
@@ -453,6 +472,11 @@ exports.confirmPassword = async (req, res) => {
     user.verificationTokenExpires = null;
 
     await user.save();
+    // console.log("Comfirm password stage ------");
+    // console.log("User email : ", user.email);
+    // console.log("User password : ", user.password);
+    // console.log("Token ", user.verificationToken);
+    // console.log("   ");
 
     res.status(200).json({ message: "Password Updated Successfully!" });
   } catch (error) {
