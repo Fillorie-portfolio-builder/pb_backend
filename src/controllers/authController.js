@@ -10,6 +10,7 @@ const SECRET_KEY = process.env.JWT_SECRET;
 // Project Owner Registration
 exports.registerOwner = async (req, res) => {
   try {
+
     const {
       firstName,
       lastName,
@@ -34,6 +35,8 @@ exports.registerOwner = async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const sanitizedBusinessUrl = businessUrl?.trim() || null;
 
     // Create Project Owner
     user = await Owner.create({
@@ -43,7 +46,7 @@ exports.registerOwner = async (req, res) => {
       password: hashedPassword,
       mobile,
       accountType: "owner",
-      businessUrl,
+      businessUrl: sanitizedBusinessUrl,
       bio,
       profileImage: profilePicture,
       linkedin,
