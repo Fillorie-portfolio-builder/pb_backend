@@ -50,6 +50,7 @@ const Owner = sequelize.define("Owner", {
   },
   businessUrl: {
     type: DataTypes.STRING,
+    allowNull: true,
     validate: {
       isUrl: true,
     },
