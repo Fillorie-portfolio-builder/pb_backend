@@ -417,7 +417,7 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save();
 
-    const resetUrl = `http://${process.env.API_BASE}/reset-password/${resetToken}`;
+    const resetUrl = `https://${process.env.API_BASE}/reset-password/${resetToken}`;
     await exports.sendForgotPasswordEmail(email, user.firstName, resetUrl);
     // console.log("Reset Password stage ----- ");
     // console.log("User email : ", user.email);
